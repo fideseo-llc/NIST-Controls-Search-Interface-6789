@@ -1,9 +1,10 @@
+// Enhanced StatsCard to show more metrics
 import React from 'react';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 
-const { FiShield, FiLayers, FiFilter, FiDatabase } = FiIcons;
+const { FiShield, FiLayers, FiFilter, FiDatabase, FiAlertTriangle, FiCheckCircle } = FiIcons;
 
 const StatsCard = ({ controls, filteredControls, selectedFamily }) => {
   const totalControls = controls.length;
@@ -12,6 +13,10 @@ const StatsCard = ({ controls, filteredControls, selectedFamily }) => {
   const totalEnhancements = controls.reduce((sum, control) => 
     sum + (control.control_enhancements?.length || 0), 0
   );
+  
+  // New metrics
+  const highPriorityControls = controls.filter(c => c.priority === 'P1').length;
+  const baselineControls = controls.filter(c => c.baseline?.includes('High')).length;
 
   const stats = [
     {
@@ -23,7 +28,7 @@ const StatsCard = ({ controls, filteredControls, selectedFamily }) => {
     },
     {
       icon: FiFilter,
-      label: selectedFamily ? 'Filtered Controls' : 'Displayed Controls',
+      label: selectedFamily ? 'Family Controls' : 'Filtered Controls',
       value: displayedControls,
       color: 'text-green-600',
       bgColor: 'bg-green-100'
@@ -41,11 +46,25 @@ const StatsCard = ({ controls, filteredControls, selectedFamily }) => {
       value: totalEnhancements,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100'
+    },
+    {
+      icon: FiAlertTriangle,
+      label: 'Priority P1',
+      value: highPriorityControls,
+      color: 'text-red-600',
+      bgColor: 'bg-red-100'
+    },
+    {
+      icon: FiCheckCircle,
+      label: 'High Baseline',
+      value: baselineControls,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-100'
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
       {stats.map((stat, index) => (
         <motion.div
           key={stat.label}

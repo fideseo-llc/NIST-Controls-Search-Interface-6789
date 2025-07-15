@@ -1,11 +1,22 @@
+// Enhanced SearchBar with additional filters
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 
-const { FiSearch, FiX, FiFilter } = FiIcons;
+const { FiSearch, FiX, FiFilter, FiAlertTriangle, FiShield } = FiIcons;
 
-const SearchBar = ({ onSearch, onFilterChange, families, selectedFamily, isLoading }) => {
+const SearchBar = ({ 
+  onSearch, 
+  onFilterChange, 
+  families, 
+  selectedFamily, 
+  isLoading,
+  onBaselineChange,
+  onPriorityChange,
+  selectedBaseline,
+  selectedPriority 
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
@@ -25,8 +36,11 @@ const SearchBar = ({ onSearch, onFilterChange, families, selectedFamily, isLoadi
     setShowFilters(false);
   };
 
+  const baselineOptions = ['Low', 'Moderate', 'High'];
+  const priorityOptions = ['P1', 'P2', 'P3'];
+
   return (
-    <div className="w-full max-w-4xl mx-auto mb-8">
+    <div className="w-full max-w-6xl mx-auto mb-8">
       <div className="relative">
         <div className="relative">
           <SafeIcon 
@@ -35,7 +49,7 @@ const SearchBar = ({ onSearch, onFilterChange, families, selectedFamily, isLoadi
           />
           <input
             type="text"
-            placeholder="Search controls by ID, title, family, or description..."
+            placeholder="Search controls by ID, title, family, description, or control text..."
             value={searchTerm}
             onChange={handleSearchChange}
             className="w-full pl-12 pr-20 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors duration-200 bg-white shadow-sm"
@@ -55,7 +69,7 @@ const SearchBar = ({ onSearch, onFilterChange, families, selectedFamily, isLoadi
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`p-2 rounded-lg transition-colors duration-200 ${
-                showFilters || selectedFamily 
+                showFilters || selectedFamily || selectedBaseline || selectedPriority
                   ? 'bg-blue-100 text-blue-600' 
                   : 'hover:bg-gray-100 text-gray-400'
               }`}
@@ -70,34 +84,106 @@ const SearchBar = ({ onSearch, onFilterChange, families, selectedFamily, isLoadi
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-10 max-h-60 overflow-y-auto"
+            className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-10"
           >
-            <div className="p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Filter by Family</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => handleFamilyChange('')}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 ${
-                    !selectedFamily 
-                      ? 'bg-blue-100 text-blue-600' 
-                      : 'hover:bg-gray-50 text-gray-700'
-                  }`}
-                >
-                  All Families
-                </button>
-                {families.map((family) => (
+            <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Family Filter */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  <SafeIcon icon={FiFilter} className="w-4 h-4 mr-2" />
+                  Control Family
+                </h3>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
                   <button
-                    key={family}
-                    onClick={() => handleFamilyChange(family)}
+                    onClick={() => handleFamilyChange('')}
                     className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 ${
-                      selectedFamily === family 
+                      !selectedFamily 
                         ? 'bg-blue-100 text-blue-600' 
                         : 'hover:bg-gray-50 text-gray-700'
                     }`}
                   >
-                    {family}
+                    All Families
                   </button>
-                ))}
+                  {families.map((family) => (
+                    <button
+                      key={family}
+                      onClick={() => handleFamilyChange(family)}
+                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 ${
+                        selectedFamily === family 
+                          ? 'bg-blue-100 text-blue-600' 
+                          : 'hover:bg-gray-50 text-gray-700'
+                      }`}
+                    >
+                      {family}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Baseline Filter */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  <SafeIcon icon={FiShield} className="w-4 h-4 mr-2" />
+                  Baseline Impact
+                </h3>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => onBaselineChange('')}
+                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 ${
+                      !selectedBaseline 
+                        ? 'bg-blue-100 text-blue-600' 
+                        : 'hover:bg-gray-50 text-gray-700'
+                    }`}
+                  >
+                    All Baselines
+                  </button>
+                  {baselineOptions.map((baseline) => (
+                    <button
+                      key={baseline}
+                      onClick={() => onBaselineChange(baseline)}
+                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 ${
+                        selectedBaseline === baseline 
+                          ? 'bg-blue-100 text-blue-600' 
+                          : 'hover:bg-gray-50 text-gray-700'
+                      }`}
+                    >
+                      {baseline} Impact
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Priority Filter */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  <SafeIcon icon={FiAlertTriangle} className="w-4 h-4 mr-2" />
+                  Priority Level
+                </h3>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => onPriorityChange('')}
+                    className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 ${
+                      !selectedPriority 
+                        ? 'bg-blue-100 text-blue-600' 
+                        : 'hover:bg-gray-50 text-gray-700'
+                    }`}
+                  >
+                    All Priorities
+                  </button>
+                  {priorityOptions.map((priority) => (
+                    <button
+                      key={priority}
+                      onClick={() => onPriorityChange(priority)}
+                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 ${
+                        selectedPriority === priority 
+                          ? 'bg-blue-100 text-blue-600' 
+                          : 'hover:bg-gray-50 text-gray-700'
+                      }`}
+                    >
+                      Priority {priority}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
